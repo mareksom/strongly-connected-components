@@ -1,6 +1,6 @@
 [package]
 name = "strongly-connected-components"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 authors = ["Marek Sommer <rust_scc.refinish266@passmail.net>"]
 repository = "https://github.com/mareksom/strongly-connected-components"
@@ -9,6 +9,7 @@ description = "Decomposes a graph into Strongly Connected Components and to sort
 license = "MIT"
 keywords = ["strongly", "connected", "components", "scc", "topological-order"]
 categories = ["algorithms"]
+readme = "README.md"
 
 [dev-dependencies]
 rand = "0.9"
