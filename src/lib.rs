@@ -129,6 +129,14 @@ pub use internal::scc_decomposition::SccDecomposition;
 
 #[cfg(test)]
 mod tests {
+    use rstest::*;
+    use std::collections::HashMap;
+    use std::ops::Range;
+
+    use rand::Rng;
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
+
     use super::*;
 
     #[test]
@@ -254,5 +262,149 @@ mod tests {
         assert_eq!(decomp.scc_of_node(v2), decomp.scc_of_node(v5));
         let scc_v2: Vec<Node> = decomp.scc_of_node(v2).iter_nodes().collect();
         assert_eq!(scc_v2, vec![v2, v5]);
+    }
+
+    struct Bruteforce {
+        n: usize,
+        graph: Graph,
+        node_to_id: HashMap<Node, usize>,
+        matrix: Vec<Vec<bool>>,
+    }
+
+    impl Bruteforce {
+        fn new(graph: Graph) -> Self {
+            let n = graph.len();
+            let node_to_id: HashMap<Node, usize> = graph
+                .iter_nodes()
+                .enumerate()
+                .map(|(id, node)| (node, id))
+                .collect();
+            let mut bruteforce = Self {
+                n,
+                graph,
+                node_to_id,
+                matrix: vec![vec![false; n]; n],
+            };
+            bruteforce.compute_matrix();
+            bruteforce
+        }
+
+        fn compute_matrix(&mut self) {
+            for (node, id) in &self.node_to_id {
+                self.matrix[*id][*id] = true;
+                for successor in self.graph.iter_successors(*node) {
+                    self.matrix[*id][self.node_to_id[&successor]] = true;
+                }
+            }
+            for k in 0..self.n {
+                for i in 0..self.n {
+                    for j in 0..self.n {
+                        if self.matrix[i][k] && self.matrix[k][j] {
+                            self.matrix[i][j] = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        fn are_same_scc(&self, a: Node, b: Node) -> bool {
+            let a_id = self.node_to_id[&a];
+            let b_id = self.node_to_id[&b];
+            return self.matrix[a_id][b_id] && self.matrix[b_id][a_id];
+        }
+
+        fn is_a_before_b(&self, a: Node, b: Node) -> bool {
+            let a_id = self.node_to_id[&a];
+            let b_id = self.node_to_id[&b];
+            return !self.matrix[a_id][b_id] && self.matrix[b_id][a_id];
+        }
+    }
+
+    struct SccDecompositionVerifier {
+        bruteforce: Bruteforce,
+        decomposition: SccDecomposition,
+        node_to_position: HashMap<Node, usize>,
+    }
+
+    impl SccDecompositionVerifier {
+        fn new(graph: Graph) -> Self {
+            let decomposition = graph.find_sccs();
+            let node_to_position: HashMap<Node, usize> = decomposition
+                .iter_nodes()
+                .enumerate()
+                .map(|(id, node)| (node, id))
+                .collect();
+            Self {
+                bruteforce: Bruteforce::new(graph),
+                decomposition,
+                node_to_position,
+            }
+        }
+
+        fn verify(&self) {
+            for (a, _) in &self.bruteforce.node_to_id {
+                for (b, _) in &self.bruteforce.node_to_id {
+                    assert_eq!(
+                        self.bruteforce.are_same_scc(*a, *b),
+                        self.decomposition.scc_of_node(*a) == self.decomposition.scc_of_node(*b)
+                    );
+                    if self.bruteforce.is_a_before_b(*a, *b) {
+                        assert!(self.node_to_position[a] < self.node_to_position[b]);
+                    }
+                }
+            }
+        }
+    }
+
+    struct RandomGraphGenerator {
+        rng: ChaCha8Rng,
+    }
+
+    impl RandomGraphGenerator {
+        fn new(seed: u64) -> Self {
+            Self {
+                rng: ChaCha8Rng::seed_from_u64(seed),
+            }
+        }
+
+        fn generate_graph(&mut self, n: Range<usize>, edge_probability: f64) -> Graph {
+            let mut graph = Graph::new();
+            let n: usize = self.rng.random_range(n);
+            let nodes: Vec<Node> = std::iter::repeat_n((), n)
+                .map(|_| graph.new_node())
+                .collect();
+            for i in 0..n {
+                for j in 0..n {
+                    if self.rng.random_bool(edge_probability) {
+                        graph.new_edge(nodes[i], nodes[j]);
+                    }
+                }
+            }
+            graph
+        }
+    }
+
+    #[rstest]
+    #[case(0x1111111, 10_000, 0..10, 0.5)]
+    #[case(0x2222222, 100, 10..100, 0.05)]
+    #[case(0x3333333, 1, 0..1000, 0.01)]
+    fn test_random_graph(
+        #[case] start_seed: u64,
+        #[case] count: usize,
+        #[case] n: Range<usize>,
+        #[case] edge_probability: f64,
+    ) {
+        for i in 0..count {
+            println!("Iteration {}", i);
+            let graph = RandomGraphGenerator::new(start_seed + (i as u64))
+                .generate_graph(n.clone(), edge_probability);
+            let edges_len: usize = graph
+                .iter_nodes()
+                .map(|node| graph.iter_successors(node).count())
+                .sum();
+            println!("Graph generated with n={} edges={}", graph.len(), edges_len);
+            let verifier = SccDecompositionVerifier::new(graph);
+            verifier.verify();
+        }
     }
 }

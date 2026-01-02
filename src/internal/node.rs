@@ -1,6 +1,6 @@
 /// Represents a single node of the graph.
 /// A node can be created by calling [`Graph::new_node()`](crate::Graph::new_node).
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub struct Node {
     pub(super) id: usize,
 }
