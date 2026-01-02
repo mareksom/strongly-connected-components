@@ -1,0 +1,13 @@
+[package]
+name = "strongly-connected-components"
+version = "0.1.0"
+edition = "2024"
+authors = ["Marek Sommer <rust_scc.refinish266@passmail.net>"]
+repository = "https://github.com/mareksom/strongly-connected-components"
+documentation = "https://docs.rs/strongly-connected-components"
+description = "Decomposes a graph into Strongly Connected Components and to sorts them in topological order."
+license = "MIT"
+keywords = ["strongly-connected-components", "scc", "tarjan", "topological-order", "graph"]
+categories = ["algorithms"]
+
+[dependencies]
