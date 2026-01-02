@@ -78,7 +78,7 @@
 //!
 //! assert_eq!(b_scc.len(), 2);
 //! let b_scc_all: Vec<Node> = b_scc.iter_nodes().collect();
-//! assert_eq!(b_scc_all, vec![c, b]);
+//! assert_eq!(b_scc_all, vec![b, c]);
 //! ```
 //! 5. List [`Scc`]s in topological order:
 //! ```
@@ -247,7 +247,7 @@ mod tests {
         assert_eq!(decomp.scc_of_node(v1), decomp.scc_of_node(v9));
         assert_eq!(decomp.scc_of_node(v1), decomp.scc_of_node(v6));
         let scc_v9: Vec<Node> = decomp.scc_of_node(v9).iter_nodes().collect();
-        assert_eq!(scc_v9, vec![v6, v9, v1]);
+        assert_eq!(scc_v9, vec![v1, v6, v9]);
 
         // Class [0, 3, 7, 8]
         assert_eq!(decomp.scc_of_node(v0).len(), 4);
@@ -255,13 +255,13 @@ mod tests {
         assert_eq!(decomp.scc_of_node(v0), decomp.scc_of_node(v7));
         assert_eq!(decomp.scc_of_node(v0), decomp.scc_of_node(v8));
         let scc_v8: Vec<Node> = decomp.scc_of_node(v8).iter_nodes().collect();
-        assert_eq!(scc_v8, vec![v8, v7, v3, v0]);
+        assert_eq!(scc_v8, vec![v0, v7, v3, v8]);
 
         // Class [2, 5]
         assert_eq!(decomp.scc_of_node(v2).len(), 2);
         assert_eq!(decomp.scc_of_node(v2), decomp.scc_of_node(v5));
         let scc_v2: Vec<Node> = decomp.scc_of_node(v2).iter_nodes().collect();
-        assert_eq!(scc_v2, vec![v2, v5]);
+        assert_eq!(scc_v2, vec![v5, v2]);
     }
 
     struct Bruteforce {
