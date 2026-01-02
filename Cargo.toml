@@ -10,4 +10,7 @@ license = "MIT"
 keywords = ["strongly-connected-components", "scc", "tarjan", "topological-order", "graph"]
 categories = ["algorithms"]
 
-[dependencies]
+[dev-dependencies]
+rand = "0.9"
+rand_chacha = "0.9"
+rstest = "0.26"

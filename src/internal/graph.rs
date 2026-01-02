@@ -57,4 +57,25 @@ impl Graph {
     pub fn find_sccs(&self) -> SccDecomposition {
         TarjanAlgorithm::new(self).solve()
     }
+
+    /// Returns the number of nodes in this graph.
+    pub fn len(&self) -> usize {
+        self.edges.len()
+    }
+
+    /// Returns `true` if the graph has no nodes.
+    pub fn is_empty(&self) -> bool {
+        self.edges.is_empty()
+    }
+
+    /// Iterates over all nodes that belong to this graph, in no particular order.
+    pub fn iter_nodes(&self) -> impl Iterator<Item = Node> {
+        (0..self.edges.len()).map(|id| Node { id })
+    }
+
+    /// Iterates over all successors of the given node, in no particular order.
+    pub fn iter_successors(&self, node: Node) -> impl Iterator<Item = Node> {
+        assert!(node.id < self.edges.len());
+        self.edges[node.id].iter().copied().map(|id| Node { id })
+    }
 }
