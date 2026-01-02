@@ -66,7 +66,7 @@ assert_eq!(a_scc_all, vec![a]);
 
 assert_eq!(b_scc.len(), 2);
 let b_scc_all: Vec<Node> = b_scc.iter_nodes().collect();
-assert_eq!(b_scc_all, vec![c, b]);
+assert_eq!(b_scc_all, vec![b, c]);
 ```
 
 ### 5. List SCCs in topological order
